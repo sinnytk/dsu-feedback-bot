@@ -13,19 +13,19 @@ Make sure you have installed:
 - Chromedriver(instructions for installation below
 
 How to run?
-- Clone the repository
+1.  Clone the repository
 ```bash
 git clone https://github.com/sinnytk/dsu-feedback-bot
 ```
-- Update your chrome and download the latest [ChromeDriver(stable)](https://chromedriver.chromium.org/)
-    - Extract the zip into the folder(same as the script) 
-- Open command prompt/terminal in the repo folder
-- Run the following command to install required libraries for Python
+2.  Update your chrome and download the latest [ChromeDriver(stable)](https://chromedriver.chromium.org/)
+    - 2.1. Extract the zip into the folder(same as the script) 
+3.  Open command prompt/terminal in the repo folder
+4.  Run the following command to install required libraries for Python
 ```bash
 pip install -r requirements.txt
 ```
-- Put in your username and password in _conf.py_
-- Run the script in command prompt/terminal using:
+5. Put in your username and password in _conf.py_
+6. Run the script in command prompt/terminal using:
 ```bash
 python autofill.py
 ```
