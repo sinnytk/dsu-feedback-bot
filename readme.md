@@ -18,6 +18,7 @@ How to run?
 git clone https://github.com/sinnytk/dsu-feedback-bot
 ```
 - Update your chrome and download the latest [ChromeDriver(stable)](https://chromedriver.chromium.org/)
+    - Extract the zip into the folder(same as the script) 
 - Open command prompt/terminal in the repo folder
 - Run the following command to install required libraries for Python
 ```bash
