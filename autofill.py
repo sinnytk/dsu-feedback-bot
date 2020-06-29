@@ -1,6 +1,9 @@
 import conf
 import email
-import pprint
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from email import policy
 from datetime import datetime
 from imaplib import IMAP4
@@ -61,6 +64,30 @@ def get_survey_link(email_message):
     return survey_link
 
 
+def fill_forms(unfilled_forms):
+    print('Opening Chrome to fill the forms according to ratings')
+    for t in unfilled_forms:
+        print(f"{t['teacher_name']}: \t{t['rating']}")
+
+    driver = webdriver.Chrome(executable_path="chromedriver.exe")
+    for form in unfilled_forms:
+        splitted_survey_link = form['survey_link'].split('//')
+        survey_link = f"{splitted_survey_link[0]}//{conf.username}:{conf.password}@{splitted_survey_link[1]}"
+        rating = form['rating']
+        driver.get(survey_link)
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "movenextbtn")))
+        driver.find_element_by_id('movenextbtn').click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "movenextbtn")))
+        for rad in driver.find_elements_by_css_selector(f'[value="A{rating}"]'):
+            rad.click()
+        driver.find_element_by_id('movenextbtn').click()
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "movesubmitbtn")))
+        driver.find_element_by_id('movesubmitbtn').click()
+
+
 def main():
     # opening a connection and connecting to mail server with IMAP
     conn = IMAP4('mail.dsu.edu.pk')
@@ -102,10 +129,9 @@ def main():
             input(f'\tWhat do you want to rate {t["teacher_name"]}: '))
         t['rating'] = rating
 
-    print('Opening Chrome to fill the forms according to ratings')
-    for t in unfilled_forms:
-        print(f"{t['teacher_name']}: \t{t['rating']}")
+    print('\n\n')
 
+    fill_forms(unfilled_forms)
     conn.logout()
 
 
