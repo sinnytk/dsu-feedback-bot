@@ -82,7 +82,8 @@ def main():
         if details['form_filled']:
             filled_forms.append(teacher)
         else:
-            unfilled_forms.append(teacher)
+            unfilled_forms.append({'teacher_name': teacher, **details})
+    print('\n\n')
 
     print('Forms filled for: ')
     for t in filled_forms:
@@ -90,7 +91,20 @@ def main():
 
     print('Forms unfilled for: ')
     for t in unfilled_forms:
-        print('\t', t)
+        print('\t', t['teacher_name'])
+
+    print('\n\n')
+
+    print('Now filling forms, please insert rate from 1-5?')
+    print('1 being excellent, 5 being poor')
+    for t in unfilled_forms:
+        rating = int(
+            input(f'\tWhat do you want to rate {t["teacher_name"]}: '))
+        t['rating'] = rating
+
+    print('Opening Chrome to fill the forms according to ratings')
+    for t in unfilled_forms:
+        print(f"{t['teacher_name']}: \t{t['rating']}")
 
     conn.logout()
 
