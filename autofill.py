@@ -1,24 +1,38 @@
 import conf
 import email
+import pprint
 from email import policy
 from datetime import datetime
 from imaplib import IMAP4
+from bs4 import BeautifulSoup
 
 
 FEEDBACK_ADMIN_EMAIL = "survey.admin@dsu.edu.pk"
 
 
 def get_latest_forms(conn):
+    latest_forms = {}
     latest_date = last_form_date(conn)
     print(f'Fetching latest forms dated {latest_date.strftime("%d-%m-%Y")}')
-    print(f'FROM "{FEEDBACK_ADMIN_EMAIL}" SINCE "{latest_date}"')
     typ, data = conn.search(
         None, f'FROM "{FEEDBACK_ADMIN_EMAIL}" SINCE "{latest_date.strftime("%d-%b-%Y")}"')
     for num in data[0].split():
         typ, data = conn.fetch(num, '(RFC822)')
         email_message = email.message_from_bytes(
             data[0][1], policy=policy.default)
-        print(email_message['subject'])
+
+        teacher_name = email_message['subject'].split('for ')[-1]
+        # If the message is an invitation, then we the form is not filled
+        if email_message['subject'].startswith('Invitation'):
+            form_link = get_survey_link(email_message)
+            latest_forms[teacher_name] = {
+                'survey_link': form_link, "form_filled": False}
+        # Else if message is an confirmation, then make form_filled true
+        elif email_message['subject'].startswith('Confirmation'):
+            teacher_name = email_message['subject'].split(
+                'for ')[-1]
+            latest_forms[teacher_name]["form_filled"] = True
+    return latest_forms
 
 
 def last_form_date(conn):
@@ -37,17 +51,46 @@ def last_form_date(conn):
     return latest_date
 
 
+def get_survey_link(email_message):
+    for part in email_message.walk():
+        if part.get_content_type() == "text/html":
+            raw_html = part.get_payload(decode=True)
+            raw_html = raw_html.decode()
+    soup = BeautifulSoup(raw_html, 'lxml')
+    survey_link = soup.a['href']
+    return survey_link
+
+
 def main():
     # opening a connection and connecting to mail server with IMAP
     conn = IMAP4('mail.dsu.edu.pk')
     # using credentials defined in conf.py to connect
+    print(f'Logging in for {conf.username}')
     conn.login(conf.username, conf.password)
+    print(f'Successfully logged in, retrieving emails ')
 
     # selecting the "inbox" mailbox
     conn.select('inbox')
 
     # retrieving the latest forms
     latest_forms = get_latest_forms(conn)
+
+    unfilled_forms = []
+    filled_forms = []
+
+    for teacher, details in latest_forms.items():
+        if details['form_filled']:
+            filled_forms.append(teacher)
+        else:
+            unfilled_forms.append(teacher)
+
+    print('Forms filled for: ')
+    for t in filled_forms:
+        print('\t', t)
+
+    print('Forms unfilled for: ')
+    for t in unfilled_forms:
+        print('\t', t)
 
     conn.logout()
 
