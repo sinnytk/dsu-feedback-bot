@@ -1,4 +1,9 @@
-import conf
+
+try:
+    import conf
+except ImportError:
+    print('Make sure conf.py is in the same folder as the script')
+    exit()
 import email
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -93,7 +98,13 @@ def main():
     conn = IMAP4('mail.dsu.edu.pk')
     # using credentials defined in conf.py to connect
     print(f'Logging in for {conf.username}')
-    conn.login(conf.username, conf.password)
+    try:
+        # conn.login(conf.username, conf.password)
+        conn.login('test', conf.password)
+    except IMAP4.error:
+        print('Invalid username/password, recheck conf.py to make sure')
+        exit()
+
     print(f'Successfully logged in, retrieving emails ')
 
     # selecting the "inbox" mailbox
@@ -125,9 +136,18 @@ def main():
     print('Now filling forms, please insert rate from 1-5?')
     print('1 being excellent, 5 being poor')
     for t in unfilled_forms:
-        rating = int(
-            input(f'\tWhat do you want to rate {t["teacher_name"]}: '))
-        t['rating'] = rating
+        while True:
+            try:
+                rating = int(
+                    input(f'\tWhat do you want to rate {t["teacher_name"]}: '))
+            except ValueError:
+                print('Invalid input, only integers between 1-5 are allowed\n\n')
+                continue
+            if rating < 0 or rating > 5:
+                print('Invalid input, only integers between 1-5 are allowed\n\n')
+                continue
+            t['rating'] = rating
+            break
 
     print('\n\n')
 
