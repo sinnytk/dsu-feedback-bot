@@ -99,8 +99,8 @@ def main():
     # using credentials defined in conf.py to connect
     print(f'Logging in for {conf.username}')
     try:
-        # conn.login(conf.username, conf.password)
-        conn.login('test', conf.password)
+        conn.login(conf.username, conf.password)
+        # conn.login('test', conf.password)
     except IMAP4.error:
         print('Invalid username/password, recheck conf.py to make sure')
         exit()
